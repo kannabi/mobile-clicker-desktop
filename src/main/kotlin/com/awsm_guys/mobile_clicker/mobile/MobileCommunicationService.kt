@@ -1,5 +1,6 @@
 package com.awsm_guys.mobile_clicker.mobile
 
+import com.awsm_guys.mobile_clicker.mobile.poko.MobileClicker
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
 import io.reactivex.disposables.CompositeDisposable
