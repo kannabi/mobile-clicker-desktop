@@ -10,4 +10,6 @@ interface MobileClicker {
     fun switchPageObservable(): Observable<Int>
 
     fun switchToPage(pageNumber: Int)
+
+    fun disconnect()
 }

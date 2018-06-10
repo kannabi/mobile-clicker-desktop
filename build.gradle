@@ -43,12 +43,16 @@ repositories {
 dependencies {
     def rx_version = '2.1.14'
 
-    compile('org.springframework.boot:spring-boot-starter-web')
-    compile('com.fasterxml.jackson.module:jackson-module-kotlin')
-    compile("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    compile("org.jetbrains.kotlin:kotlin-reflect")
+    implementation('org.springframework.boot:spring-boot-starter-web')
+    implementation('com.fasterxml.jackson.module:jackson-module-kotlin')
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    implementation("org.jetbrains.kotlin:kotlin-reflect")
     testCompile('org.springframework.boot:spring-boot-starter-test')
 
 //    compile 'io.reactivex.rxjava2:rxjava:$rx_version'
-    compile 'io.reactivex.rxjava2:rxjava:2.1.14'
+    implementation 'io.reactivex.rxjava2:rxjava:2.1.14'
+
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.5'
+    implementation "com.fasterxml.jackson.module:jackson-module-kotlin:2.9.4.1"
+
 }

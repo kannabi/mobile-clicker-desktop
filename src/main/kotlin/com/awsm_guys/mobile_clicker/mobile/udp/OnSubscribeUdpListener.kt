@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicBoolean
 
 
-class OnSubscribeUdpBroadcast(private val port: Int): FlowableOnSubscribe<DatagramPacket> {
+class OnSubscribeUdpListener(private val port: Int): FlowableOnSubscribe<DatagramPacket> {
     private val emitters = ConcurrentLinkedQueue<FlowableEmitter<DatagramPacket>>()
 
     private var socket: DatagramSocket? = null
@@ -40,7 +40,7 @@ class OnSubscribeUdpBroadcast(private val port: Int): FlowableOnSubscribe<Datagr
 
     private fun startListening() {
         isListening.set(true)
-        val receiveData = ByteArray(1024)
+        val receiveData = ByteArray(2048)
         var datagramPacket = DatagramPacket(receiveData, receiveData.size)
         println("start listening")
         while (isListening.get()) {

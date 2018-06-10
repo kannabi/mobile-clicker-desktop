@@ -17,8 +17,9 @@ class MobileCommunicationService {
     set(value) {
         broadcastDisposable?.dispose()
         broadcastDisposable = null
-        println(value)
         field = value
+        println(field?.getName())
+        field?.init()
     }
 
     @PostConstruct
