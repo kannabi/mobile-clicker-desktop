@@ -1,4 +1,4 @@
-package com.awsm_guys.mobile_clicker.mobile.udp
+package com.awsm_guys.mobile_clicker.mobile.localnetwork
 
 import io.reactivex.FlowableEmitter
 import io.reactivex.FlowableOnSubscribe

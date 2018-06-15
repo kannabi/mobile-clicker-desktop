@@ -5,7 +5,7 @@ import io.reactivex.Observable
 interface MobileClicker {
     fun getName(): String
 
-    fun init()
+    fun init(): Observable<MobileClicker>
 
     fun switchPageObservable(): Observable<Int>
 

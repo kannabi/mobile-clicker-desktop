@@ -1,6 +1,6 @@
-package com.awsm_guys.mobile_clicker.mobile.udp.poko
+package com.awsm_guys.mobile_clicker.mobile.localnetwork.poko
 
-class ClickerMessage (
+data class ClickerMessage (
         var header: Header,
         var body: String,
         var features: MutableMap<String, String>

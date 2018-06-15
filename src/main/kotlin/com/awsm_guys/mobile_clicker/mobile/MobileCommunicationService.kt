@@ -1,8 +1,9 @@
 package com.awsm_guys.mobile_clicker.mobile
 
-import com.awsm_guys.mobile_clicker.mobile.udp.UdpMobileConnectionListener
+import com.awsm_guys.mobile_clicker.mobile.localnetwork.UdpMobileConnectionListener
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
+import io.reactivex.schedulers.Schedulers
 import org.springframework.stereotype.Component
 import javax.annotation.PostConstruct
 import javax.annotation.PreDestroy
@@ -19,7 +20,7 @@ class MobileCommunicationService {
         broadcastDisposable = null
         field = value
         println(field?.getName())
-        field?.init()
+        value?.switchToPage(1)
     }
 
     @PostConstruct
@@ -30,13 +31,16 @@ class MobileCommunicationService {
     private fun startListeningClickerConnection() {
         broadcastDisposable =
                 mobileConnectionListener?.startListening()
-                ?.filter(this::verifyMobileClicker)
-                ?.doOnNext{ dropConnectionListening() }
-                ?.subscribe(this::mobileClicker::set, Throwable::printStackTrace)
+                ?.subscribeOn(Schedulers.io())
+                ?.filter(::verifyMobileClicker)
+                ?.doOnNext { dropConnectionListening() }
+                ?.flatMap(MobileClicker::init)
+                ?.subscribe(::mobileClicker::set, Throwable::printStackTrace)
     }
 
+
     private fun verifyMobileClicker(mobileClicker: MobileClicker): Boolean {
-        //TODO: there will be sending confirmation dialog to view and getting
+        //TODO: there will be sending confirmation dialog to view and getting answer
         return true
     }
 
