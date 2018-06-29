@@ -42,11 +42,10 @@ class OnSubscribeUdpListener(private val port: Int): FlowableOnSubscribe<Datagra
         isListening.set(true)
         val receiveData = ByteArray(2048)
         var datagramPacket = DatagramPacket(receiveData, receiveData.size)
-        println("start listening")
         while (isListening.get()) {
             socket?.receive(datagramPacket)
             println(String(datagramPacket.data))
-            for(emitter in emitters){
+            for(emitter in emitters) {
                 emitter.onNext(datagramPacket)
             }
             datagramPacket = DatagramPacket(receiveData, receiveData.size)

@@ -49,7 +49,6 @@ class OnSubscribeTcpConnection(
     private fun startConnectionProcess() {
         compositeDisposable.add(
             Observable.interval(500, TimeUnit.MILLISECONDS)
-                    .take(8)
                     .map { datagramPacket }
                     .subscribe(
                             datagramSocket::send,
@@ -76,11 +75,11 @@ class OnSubscribeTcpConnection(
     }
 
     private fun emit(socket: Socket){
-        stopConnectionProcess()
         for (emitter in emitters) {
             emitter.onNext(socket)
             emitter.onComplete()
         }
+        stopConnectionProcess()
     }
 
     private fun onError(throwable: Throwable){

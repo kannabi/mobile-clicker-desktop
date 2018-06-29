@@ -26,13 +26,14 @@ class UdpMobileClicker(
                             targetAddress = inetAddress,
                             message = objectMapper.writeValueAsString(
                                                 ClickerMessage(
-                                                    Header.OK, "$clickerPort", mutableMapOf()
+                                                    Header.OK, "$clickerPort",
+                                                        mutableMapOf( "sessionId" to "321rqfsirgoh")
                                                 )
                                         ).toByteArray()
                     )
             )
             .map(::RxSocketWrapper)
-            .doOnNext{
+            .doOnNext {
                 rxSocketWrapper = it
             }
             .map { this }
