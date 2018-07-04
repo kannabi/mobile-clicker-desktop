@@ -1,6 +1,6 @@
 package com.awsm_guys.mobile_clicker.mobile
 
-import com.awsm_guys.mobile_clicker.mobile.localnetwork.UdpMobileConnectionListener
+import com.awsm_guys.mobile_clicker.mobile.lan.UdpMobileConnectionListener
 import com.awsm_guys.mobile_clicker.utils.LoggingMixin
 import com.awsm_guys.mobileclicker.clicker.model.events.*
 import io.reactivex.disposables.CompositeDisposable

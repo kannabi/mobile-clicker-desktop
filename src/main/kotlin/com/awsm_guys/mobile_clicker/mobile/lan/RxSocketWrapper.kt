@@ -1,4 +1,4 @@
-package com.awsm_guys.mobile_clicker.mobile.localnetwork
+package com.awsm_guys.mobile_clicker.mobile.lan
 
 import com.awsm_guys.mobile_clicker.utils.LoggingMixin
 import io.reactivex.Observable

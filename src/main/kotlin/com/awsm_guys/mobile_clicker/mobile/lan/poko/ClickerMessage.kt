@@ -1,4 +1,4 @@
-package com.awsm_guys.mobile_clicker.mobile.localnetwork.poko
+package com.awsm_guys.mobile_clicker.mobile.lan.poko
 
 data class ClickerMessage (
         var header: Header,

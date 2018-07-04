@@ -1,9 +1,9 @@
-package com.awsm_guys.mobile_clicker.mobile.localnetwork
+package com.awsm_guys.mobile_clicker.mobile.lan
 
 import com.awsm_guys.mobile_clicker.mobile.MobileClicker
 import com.awsm_guys.mobile_clicker.mobile.MobileConnectionListener
-import com.awsm_guys.mobile_clicker.mobile.localnetwork.poko.ClickerMessage
-import com.awsm_guys.mobile_clicker.mobile.localnetwork.poko.Header
+import com.awsm_guys.mobile_clicker.mobile.lan.poko.ClickerMessage
+import com.awsm_guys.mobile_clicker.mobile.lan.poko.Header
 import com.awsm_guys.mobile_clicker.utils.LoggingMixin
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
