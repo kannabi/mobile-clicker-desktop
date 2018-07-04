@@ -3,10 +3,13 @@ package com.awsm_guys.mobile_clicker.mobile.localnetwork
 import com.awsm_guys.mobile_clicker.mobile.MobileClicker
 import com.awsm_guys.mobile_clicker.mobile.localnetwork.poko.ClickerMessage
 import com.awsm_guys.mobile_clicker.mobile.localnetwork.poko.Header
+import com.awsm_guys.mobileclicker.clicker.model.events.*
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.reactivex.Observable
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.subjects.BehaviorSubject
 
-class UdpMobileClicker(
+class LanMobileClicker(
         var inetAddress: String,
         var port: Int,
         var clickerName: String
@@ -16,9 +19,13 @@ class UdpMobileClicker(
     private val objectMapper by lazy { ObjectMapper() }
     private lateinit var rxSocketWrapper: RxSocketWrapper
 
+    private val eventsSubject = BehaviorSubject.create<ClickerEvent>()
+
+    private val compositeDisposable = CompositeDisposable()
+
 
     //TODO: should it be like that?
-    override fun init(): Observable<MobileClicker> =
+    override fun init(): Observable<ClickerEvent> =
             Observable.create(
                     OnSubscribeTcpConnection(
                             localPort = clickerPort,
@@ -35,28 +42,42 @@ class UdpMobileClicker(
             .map(::RxSocketWrapper)
             .doOnNext {
                 rxSocketWrapper = it
+                subscribeToSocketData(rxSocketWrapper.inputObservable)
+                eventsSubject.onNext(ConnectionOpen())
             }
-            .map { this }
+            .flatMap { eventsSubject.hide() }
 
     override fun getName() = clickerName
 
-    override fun switchPageObservable(): Observable<Int> =
-            rxSocketWrapper.inputObservable
-                    .map { objectMapper.readValue(it, ClickerMessage::class.java) }
-                    .retry()
-                    .filter{ it.header == Header.SWITCH_PAGE }
-                    .map { it.body.toInt() }
-                    .retry()
+    private fun subscribeToSocketData(inputObservable: Observable<String>) {
+        inputObservable
+                .map { objectMapper.readValue(it, ClickerMessage::class.java) }
+                .retry()
+                .subscribe(::processClickerMessage, {
+                    eventsSubject.onNext(ClickerBroken())
+                }, {
+                    eventsSubject.onNext(ConnectionClose())
+                })
+    }
+
+    private fun processClickerMessage(message: ClickerMessage) {
+        when(message.header) {
+            Header.SWITCH_PAGE -> eventsSubject.onNext(PageSwitch(message.body.toInt()))
+            else -> Unit
+        }
+    }
 
     override fun switchToPage(pageNumber: Int) {
         rxSocketWrapper.sendData(
-               getMessage(Header.SWITCH_PAGE, "1", mutableMapOf())
+               getMessage(Header.SWITCH_PAGE, pageNumber.toString(), mutableMapOf())
         )
     }
 
     private fun getMessage(header: Header, body: String, features: MutableMap<String, String>) =
             objectMapper.writeValueAsString(ClickerMessage(header, body, features))
 
-    override fun disconnect() =
+    override fun disconnect() {
         rxSocketWrapper.close()
+        compositeDisposable.clear()
+    }
 }

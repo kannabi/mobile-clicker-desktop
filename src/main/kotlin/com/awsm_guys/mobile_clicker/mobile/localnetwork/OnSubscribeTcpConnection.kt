@@ -1,5 +1,6 @@
 package com.awsm_guys.mobile_clicker.mobile.localnetwork
 
+import com.awsm_guys.mobile_clicker.utils.LoggingMixin
 import io.reactivex.Observable
 import io.reactivex.ObservableEmitter
 import io.reactivex.ObservableOnSubscribe
@@ -15,14 +16,14 @@ class OnSubscribeTcpConnection(
         targetAddress: String,
         targetPort: Int,
         message: ByteArray
-): ObservableOnSubscribe<Socket> {
+): ObservableOnSubscribe<Socket>, LoggingMixin {
     private val emitters by lazy { ConcurrentLinkedQueue<ObservableEmitter<Socket>>() }
     private val lock by lazy { Any() }
     private val serverSocket by lazy { ServerSocket(localPort) }
-    private val datagramSocket by lazy { DatagramSocket() }
+    private val datagramSocket by lazy { DatagramSocket().apply { reuseAddress = true } }
     private val compositeDisposable by lazy { CompositeDisposable() }
 
-    private val datagramPacket = DatagramPacket(
+    private val connectionInfoPacket = DatagramPacket(
             message,
             message.size,
             InetAddress.getByName(targetAddress),
@@ -30,7 +31,7 @@ class OnSubscribeTcpConnection(
     )
 
     override fun subscribe(emitter: ObservableEmitter<Socket>) {
-        synchronized(lock, {
+        synchronized(lock) {
             if (!emitter.isDisposed) {
                 if (emitters.isEmpty()){
                     startConnectionProcess()
@@ -43,13 +44,14 @@ class OnSubscribeTcpConnection(
                     }
                 })
             }
-        })
+        }
     }
 
     private fun startConnectionProcess() {
+        log("start connection process")
         compositeDisposable.add(
             Observable.interval(500, TimeUnit.MILLISECONDS)
-                    .map { datagramPacket }
+                    .map { connectionInfoPacket }
                     .subscribe(
                             datagramSocket::send,
                             this::onError,

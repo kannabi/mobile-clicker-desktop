@@ -4,13 +4,14 @@ import com.awsm_guys.mobile_clicker.mobile.MobileClicker
 import com.awsm_guys.mobile_clicker.mobile.MobileConnectionListener
 import com.awsm_guys.mobile_clicker.mobile.localnetwork.poko.ClickerMessage
 import com.awsm_guys.mobile_clicker.mobile.localnetwork.poko.Header
+import com.awsm_guys.mobile_clicker.utils.LoggingMixin
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
 import io.reactivex.Observable
 
-class UdpMobileConnectionListener: MobileConnectionListener {
+class UdpMobileConnectionListener: MobileConnectionListener, LoggingMixin {
 
     private var broadcastPort = 8841
     private val onSubscribeUdpBroadcast by lazy { OnSubscribeUdpListener(broadcastPort) }
@@ -22,6 +23,7 @@ class UdpMobileConnectionListener: MobileConnectionListener {
 
     override fun startListening(): Observable<MobileClicker> =
         Flowable.create(onSubscribeUdpBroadcast, BackpressureStrategy.LATEST)
+                .doOnNext { log("receive ${String(it.data)}") }
                 .map {
                     objectMapper.readValue(String(it.data), ClickerMessage::class.java)
                             .apply {
@@ -32,7 +34,7 @@ class UdpMobileConnectionListener: MobileConnectionListener {
                 .distinctUntilChanged()
                 .filter{ it.header == Header.CONNECT }
                 .map {
-                    UdpMobileClicker(
+                    LanMobileClicker(
                             it.features["address"]!!, it.features["port"]?.toInt()!!, it.body
                     ) as MobileClicker
                 }
