@@ -1,25 +1,25 @@
 package com.awsm_guys.mobile_clicker.mobile
 
-import com.awsm_guys.mobile_clicker.mobile.udp.UdpMobileConnectionListener
+import com.awsm_guys.mobile_clicker.mobile.lan.UdpMobileConnectionListener
+import com.awsm_guys.mobile_clicker.utils.LoggingMixin
+import com.awsm_guys.mobileclicker.clicker.model.events.*
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
+import io.reactivex.schedulers.Schedulers
 import org.springframework.stereotype.Component
 import javax.annotation.PostConstruct
 import javax.annotation.PreDestroy
 
 @Component
-class MobileCommunicationService {
+class MobileCommunicationService: LoggingMixin {
 
     private val compositeDisposable by lazy { CompositeDisposable() }
     private var broadcastDisposable: Disposable? = null
     private var mobileConnectionListener: MobileConnectionListener? = UdpMobileConnectionListener()
     private var mobileClicker: MobileClicker? = null
     set(value) {
-        broadcastDisposable?.dispose()
-        broadcastDisposable = null
         field = value
-        println(field?.getName())
-        field?.init()
+        log("${field?.getName()} set")
     }
 
     @PostConstruct
@@ -30,13 +30,27 @@ class MobileCommunicationService {
     private fun startListeningClickerConnection() {
         broadcastDisposable =
                 mobileConnectionListener?.startListening()
-                ?.filter(this::verifyMobileClicker)
-                ?.doOnNext{ dropConnectionListening() }
-                ?.subscribe(this::mobileClicker::set, Throwable::printStackTrace)
+                ?.subscribeOn(Schedulers.io())
+                ?.filter(::verifyMobileClicker)
+                ?.doOnNext {
+                    mobileClicker = it
+                    dropConnectionListening()
+                }
+                ?.flatMap(MobileClicker::init)
+                ?.subscribe(::processClickerEvents, Throwable::printStackTrace)
+    }
+
+    private fun processClickerEvents(event: ClickerEvent) {
+        when(event){
+            is ConnectionClose -> log("connection close")
+            is ConnectionOpen -> log("connection open")
+            is PageSwitch -> log("page switch ${event.page}")
+            is ClickerBroken -> log("clicker broken")
+        }
     }
 
     private fun verifyMobileClicker(mobileClicker: MobileClicker): Boolean {
-        //TODO: there will be sending confirmation dialog to view and getting
+        //TODO: there will be sending confirmation dialog to view and getting answer
         return true
     }
 
@@ -48,5 +62,7 @@ class MobileCommunicationService {
     @PreDestroy
     fun onDestroy() {
         compositeDisposable.clear()
+        broadcastDisposable?.dispose()
+        broadcastDisposable = null
     }
 }

@@ -1,5 +1,6 @@
-package com.awsm_guys.mobile_clicker.mobile.udp
+package com.awsm_guys.mobile_clicker.mobile.lan
 
+import com.awsm_guys.mobile_clicker.utils.LoggingMixin
 import io.reactivex.FlowableEmitter
 import io.reactivex.FlowableOnSubscribe
 import io.reactivex.disposables.Disposables
@@ -9,7 +10,9 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicBoolean
 
 
-class OnSubscribeUdpListener(private val port: Int): FlowableOnSubscribe<DatagramPacket> {
+class OnSubscribeUdpListener(
+        private val port: Int
+): FlowableOnSubscribe<DatagramPacket>, LoggingMixin {
     private val emitters = ConcurrentLinkedQueue<FlowableEmitter<DatagramPacket>>()
 
     private var socket: DatagramSocket? = null
@@ -17,7 +20,7 @@ class OnSubscribeUdpListener(private val port: Int): FlowableOnSubscribe<Datagra
     private val lock = Any()
 
     override fun subscribe(emitter: FlowableEmitter<DatagramPacket>) {
-        synchronized(lock, {
+        synchronized(lock) {
             if (!emitter.isCancelled) {
                 if (emitters.isEmpty()){
                     socket = getSocket()
@@ -31,7 +34,7 @@ class OnSubscribeUdpListener(private val port: Int): FlowableOnSubscribe<Datagra
                     }
                 })
             }
-        })
+        }
 
         if (!isListening.get()){
             startListening()
@@ -41,12 +44,12 @@ class OnSubscribeUdpListener(private val port: Int): FlowableOnSubscribe<Datagra
     private fun startListening() {
         isListening.set(true)
         val receiveData = ByteArray(2048)
+        log("start listening")
         var datagramPacket = DatagramPacket(receiveData, receiveData.size)
-        println("start listening")
         while (isListening.get()) {
             socket?.receive(datagramPacket)
-            println(String(datagramPacket.data))
-            for(emitter in emitters){
+            for(emitter in emitters) {
+                log(String(datagramPacket.data))
                 emitter.onNext(datagramPacket)
             }
             datagramPacket = DatagramPacket(receiveData, receiveData.size)
@@ -62,5 +65,6 @@ class OnSubscribeUdpListener(private val port: Int): FlowableOnSubscribe<Datagra
     private fun getSocket() =
             DatagramSocket(port).apply {
                 broadcast = true
+                reuseAddress = true
             }
 }
