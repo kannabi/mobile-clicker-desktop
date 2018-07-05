@@ -7,8 +7,6 @@ import io.reactivex.ObservableOnSubscribe
 import io.reactivex.Single
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
-import java.io.BufferedReader
-import java.io.InputStreamReader
 import java.net.Socket
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -17,7 +15,7 @@ class RxSocketWrapper(private val socket: Socket): LoggingMixin {
     private val compositeDisposable = CompositeDisposable()
 
     private val outputStream = socket.getOutputStream()
-    private val inputReader = BufferedReader(InputStreamReader(socket.getInputStream()))
+    private val inputStream = socket.getInputStream()
 
     val inputObservable: Observable<String> by lazy {
         Observable.create(object : ObservableOnSubscribe<String> {
@@ -32,15 +30,15 @@ class RxSocketWrapper(private val socket: Socket): LoggingMixin {
 
             private fun startListening() {
                 try {
-                    BufferedReader(InputStreamReader(socket.getInputStream())).use {
-                        var data: String?
-                        while (isListening.get()){
-                            data = it.readLine()
-                            if (data == null) {
-                                emitter.onNext(data)
-                            } else {
-                                emitter.onComplete()
-                            }
+                    val data = ByteArray(2048)
+                    var readedBytes = 0
+                    while (isListening.get() && readedBytes != -1){
+                        readedBytes = inputStream.read(data)
+                        if (readedBytes != -1) {
+                            println(String(data))
+                            emitter.onNext(String(data))
+                        } else {
+                            emitter.onError(CloseWithoutMessageException())
                         }
                     }
                 } catch (e: Throwable){
@@ -61,10 +59,10 @@ class RxSocketWrapper(private val socket: Socket): LoggingMixin {
         )
     }
 
-    fun close(){
-        socket.close()
-        inputReader.close()
+    fun close() {
+        inputStream.close()
         outputStream.close()
+        socket.close()
         compositeDisposable.clear()
     }
 }
