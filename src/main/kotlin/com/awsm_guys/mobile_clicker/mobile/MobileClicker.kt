@@ -6,7 +6,7 @@ import io.reactivex.Observable
 interface MobileClicker {
     fun getName(): String
 
-    fun init(): Observable<ClickerEvent>
+    fun init(maxPage: Int, sessionId: String): Observable<ClickerEvent>
 
     fun switchToPage(pageNumber: Int)
 

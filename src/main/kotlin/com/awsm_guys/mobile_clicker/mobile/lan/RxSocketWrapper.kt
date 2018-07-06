@@ -30,7 +30,7 @@ class RxSocketWrapper(private val socket: Socket): LoggingMixin {
 
             private fun startListening() {
                 try {
-                    val data = ByteArray(2048)
+                    val data = ByteArray(512)
                     var readedBytes = 0
                     while (isListening.get() && readedBytes != -1){
                         readedBytes = inputStream.read(data)

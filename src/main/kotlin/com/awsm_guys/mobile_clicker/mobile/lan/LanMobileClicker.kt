@@ -6,6 +6,7 @@ import com.awsm_guys.mobile_clicker.mobile.lan.poko.Header
 import com.awsm_guys.mobile_clicker.utils.LoggingMixin
 import com.awsm_guys.mobileclicker.clicker.model.events.ClickerEvent
 import com.awsm_guys.mobileclicker.clicker.model.events.ConnectionClose
+import com.awsm_guys.mobileclicker.clicker.model.events.ConnectionOpen
 import com.awsm_guys.mobileclicker.clicker.model.events.PageSwitch
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.reactivex.Observable
@@ -31,11 +32,19 @@ class LanMobileClicker(
 
     private val compositeDisposable = CompositeDisposable()
 
-    override fun init(): Observable<ClickerEvent> {
+    override fun init(maxPage: Int, sessionId: String): Observable<ClickerEvent> {
         val udpPoller = UdpPoller()
         val id = udpPoller.poll(
-                getMessage(Header.OK, "$clickerPort", mutableMapOf( "sessionId" to "321rqfsirgoh")).toByteArray(),
-                port, InetAddress.getByName(inetAddress)
+                getMessage(
+                        Header.OK,
+                        "$clickerPort",
+                        mutableMapOf (
+                                "sessionId" to sessionId,
+                                "maxPage" to maxPage.toString()
+                        )
+                ).toByteArray(),
+                port,
+                InetAddress.getByName(inetAddress)
         )
         log("start poll")
 
@@ -50,6 +59,7 @@ class LanMobileClicker(
         udpPoller.remove(id)
         udpPoller.clear()
 
+        eventsSubject.onNext(ConnectionOpen())
         return eventsSubject.hide()
     }
 

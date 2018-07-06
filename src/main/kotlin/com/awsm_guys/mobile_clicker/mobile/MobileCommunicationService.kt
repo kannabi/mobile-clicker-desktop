@@ -17,10 +17,15 @@ class MobileCommunicationService: LoggingMixin {
     private var broadcastDisposable: Disposable? = null
     private var mobileConnectionListener: MobileConnectionListener? = UdpMobileConnectionListener()
     private var mobileClicker: MobileClicker? = null
-    set(value) {
-        field = value
-        log("${field?.getName()} set")
-    }
+        set(value) {
+            field = value
+            log("${field?.getName()} set")
+        }
+
+    private val maxPage = 10
+    private var currentPage = 1
+    private var sessionId = "321rqfsirgoh"
+
 
     @PostConstruct
     fun init() {
@@ -36,15 +41,22 @@ class MobileCommunicationService: LoggingMixin {
                     mobileClicker = it
                     dropConnectionListening()
                 }
-                ?.flatMap(MobileClicker::init)
+                ?.flatMap { mobileClicker!!.init(maxPage, sessionId) }
                 ?.subscribe(::processClickerEvents, Throwable::printStackTrace)
     }
 
     private fun processClickerEvents(event: ClickerEvent) {
         when(event){
             is ConnectionClose -> log("connection close")
-            is ConnectionOpen -> log("connection open")
-            is PageSwitch -> log("page switch ${event.page}")
+            is ConnectionOpen -> {
+                log("connection open")
+                mobileClicker?.switchToPage(currentPage)
+            }
+            is PageSwitch -> {
+                log("page switch ${event.page}")
+                currentPage = event.page
+                mobileClicker?.switchToPage(currentPage)
+            }
             is ClickerBroken -> log("clicker broken")
         }
     }
