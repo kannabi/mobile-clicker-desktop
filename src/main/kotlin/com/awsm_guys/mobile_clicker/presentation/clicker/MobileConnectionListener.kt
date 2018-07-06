@@ -1,4 +1,4 @@
-package com.awsm_guys.mobile_clicker.mobile
+package com.awsm_guys.mobile_clicker.presentation.clicker
 
 import io.reactivex.Observable
 

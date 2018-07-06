@@ -56,4 +56,6 @@ dependencies {
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.5'
     implementation "com.fasterxml.jackson.module:jackson-module-kotlin:2.9.4.1"
 
+    implementation "org.apache.pdfbox.pdfbox:2.0.4"
+
 }

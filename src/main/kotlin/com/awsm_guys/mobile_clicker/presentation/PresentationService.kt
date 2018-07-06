@@ -1,6 +1,8 @@
-package com.awsm_guys.mobile_clicker.mobile
+package com.awsm_guys.mobile_clicker.presentation
 
-import com.awsm_guys.mobile_clicker.mobile.lan.UdpMobileConnectionListener
+import com.awsm_guys.mobile_clicker.presentation.clicker.MobileClicker
+import com.awsm_guys.mobile_clicker.presentation.clicker.MobileConnectionListener
+import com.awsm_guys.mobile_clicker.presentation.clicker.lan.UdpMobileConnectionListener
 import com.awsm_guys.mobile_clicker.utils.LoggingMixin
 import com.awsm_guys.mobileclicker.clicker.model.events.*
 import io.reactivex.disposables.CompositeDisposable
@@ -11,7 +13,7 @@ import javax.annotation.PostConstruct
 import javax.annotation.PreDestroy
 
 @Component
-class MobileCommunicationService: LoggingMixin {
+class PresentationService: LoggingMixin {
 
     private val compositeDisposable by lazy { CompositeDisposable() }
     private var broadcastDisposable: Disposable? = null
