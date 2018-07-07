@@ -1,6 +1,6 @@
 package com.awsm_guys.mobile_clicker.presentation.clicker
 
-import com.awsm_guys.mobileclicker.clicker.model.events.ClickerEvent
+import com.awsm_guys.mobile_clicker.presentation.clicker.poko.ClickerEvent
 import io.reactivex.Observable
 
 interface MobileClicker {

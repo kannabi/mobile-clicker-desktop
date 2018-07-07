@@ -1,13 +1,13 @@
 package com.awsm_guys.mobile_clicker.presentation.clicker.lan
 
 import com.awsm_guys.mobile_clicker.presentation.clicker.MobileClicker
-import com.awsm_guys.mobile_clicker.presentation.clicker.lan.poko.ClickerMessage
-import com.awsm_guys.mobile_clicker.presentation.clicker.lan.poko.Header
+import com.awsm_guys.mobile_clicker.presentation.clicker.poko.ClickerMessage
+import com.awsm_guys.mobile_clicker.presentation.clicker.poko.Header
 import com.awsm_guys.mobile_clicker.utils.LoggingMixin
-import com.awsm_guys.mobileclicker.clicker.model.events.ClickerEvent
-import com.awsm_guys.mobileclicker.clicker.model.events.ConnectionClose
-import com.awsm_guys.mobileclicker.clicker.model.events.ConnectionOpen
-import com.awsm_guys.mobileclicker.clicker.model.events.PageSwitch
+import com.awsm_guys.mobile_clicker.presentation.clicker.poko.ClickerEvent
+import com.awsm_guys.mobile_clicker.presentation.clicker.poko.ConnectionClose
+import com.awsm_guys.mobile_clicker.presentation.clicker.poko.ConnectionOpen
+import com.awsm_guys.mobile_clicker.presentation.clicker.poko.PageSwitch
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.reactivex.Observable
 import io.reactivex.disposables.CompositeDisposable

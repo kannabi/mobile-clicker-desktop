@@ -1,4 +1,4 @@
-package com.awsm_guys.mobile_clicker.presentation.clicker.lan.poko
+package com.awsm_guys.mobile_clicker.presentation.clicker.poko
 
 data class ClickerMessage (
         var header: Header,
