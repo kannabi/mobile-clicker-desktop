@@ -8,11 +8,14 @@ import com.awsm_guys.mobile_clicker.presentation.poko.Presentation
 import com.awsm_guys.mobile_clicker.presentation.poko.PresentationInfo
 import com.awsm_guys.mobile_clicker.presentation.viewinteractor.*
 import com.awsm_guys.mobile_clicker.utils.LoggingMixin
+import com.awsm_guys.mobile_clicker.utils.convertPdfToImages
 import io.reactivex.Observable
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import org.springframework.stereotype.Component
+import java.io.File
+import java.util.*
 import javax.annotation.PreDestroy
 
 @Component
@@ -27,9 +30,8 @@ class PresentationService: LoggingMixin {
             log("${field?.getName()} set")
         }
 
-    private val maxPage = 10
     private var currentPage = 1
-    private var sessionId = "321rqfsirgoh"
+    private lateinit var sessionId: String
 
     private lateinit var viewInteractor: ViewInteractor
 
@@ -44,12 +46,12 @@ class PresentationService: LoggingMixin {
                         mobileClicker = it
                         dropClickerConnectionListening()
                     }
-                    .flatMap { mobileClicker!!.init(maxPage, sessionId) }
+                    .flatMap { mobileClicker!!.init(presentation.pages.size, sessionId) }
                     .subscribe(::processClickerEvents, Throwable::printStackTrace)
     }
 
     private fun processClickerEvents(event: ClickerEvent) {
-        when(event){
+        when(event) {
             is ConnectionClose -> log("connection close")
             is ConnectionOpen -> {
                 log("connection open")
@@ -79,7 +81,17 @@ class PresentationService: LoggingMixin {
     }
 
     fun startPresentation(filePath: String): PresentationInfo {
-        TODO()
+        val file = File(filePath)
+        sessionId = UUID.randomUUID().toString()
+        presentation = Presentation(
+                sessionId, file.name, convertPdfToImages(file)
+        )
+        return PresentationInfo(
+                sessionId,
+                presentation.pages.size,
+                presentation.title,
+                presentation.pages[0]
+        )
     }
 
     private fun processViewEvent(event: ViewEvent) {

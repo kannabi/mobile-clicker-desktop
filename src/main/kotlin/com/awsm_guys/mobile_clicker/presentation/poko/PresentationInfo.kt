@@ -4,6 +4,5 @@ data class PresentationInfo(
         var sessionId: String,
         var slidesNumber: Int,
         var title: String,
-        var firstPage: Page,
-        var socketEndpoint: String
+        var firstPage: Page
 )
