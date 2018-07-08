@@ -14,7 +14,7 @@ class PresentationController {
     private lateinit var controllerListener: ControllerListener
 
 
-    @RequestMapping(value = ["/subscribe"], method = [(RequestMethod.POST)])
+    @RequestMapping(value = ["/startPresentation"], method = [(RequestMethod.POST)])
     @ResponseBody
     fun startPresentation(filePath: String) = controllerListener.startPresentation(filePath)
 }
