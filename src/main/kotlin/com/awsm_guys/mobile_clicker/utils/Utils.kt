@@ -15,7 +15,7 @@ fun convertPdfToImages(file: File): List<Page> {
     val renderer = PDFRenderer(document)
 
     return document.pages
-            .mapIndexed { i, _ -> Page(imgToBase64String(renderer.renderImage(i)), i) }
+            .mapIndexed { i, _ -> Page(imgToBase64String(renderer.renderImageWithDPI(i, 150f)), i) }
 }
 
 fun imgToBase64String(img: RenderedImage) =
