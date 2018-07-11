@@ -1,4 +1,4 @@
-package com.awsm_guys.mobile_clicker.presentation.clicker.poko
+package com.awsm_guys.mobile_clicker.presentation.poko
 
 import com.fasterxml.jackson.annotation.JsonValue
 

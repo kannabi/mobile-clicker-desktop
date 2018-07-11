@@ -1,6 +1,10 @@
 package com.awsm_guys.mobile_clicker.utils
 
 import com.awsm_guys.mobile_clicker.presentation.poko.Page
+import io.reactivex.Single
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.functions.BiConsumer
+import io.reactivex.schedulers.Schedulers
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.rendering.PDFRenderer
 import java.awt.image.RenderedImage
@@ -15,7 +19,7 @@ fun convertPdfToImages(file: File): List<Page> {
     val renderer = PDFRenderer(document)
 
     return document.pages
-            .mapIndexed { i, _ -> Page(imgToBase64String(renderer.renderImage(i)), i) }
+            .mapIndexed { i, _ -> Page(imgToBase64String(renderer.renderImageWithDPI(i, 150f)), i) }
 }
 
 fun imgToBase64String(img: RenderedImage) =
@@ -23,3 +27,16 @@ fun imgToBase64String(img: RenderedImage) =
             ImageIO.write(img, "png", os)
             return@use Base64.getEncoder().encodeToString(os.toByteArray())
         }!!
+
+fun makeSingle(compositeDisposable: CompositeDisposable, body: (() -> Unit)) {
+    compositeDisposable.add(
+            Single.fromCallable(body).subscribeOn(Schedulers.io()).subscribe()
+    )
+}
+
+fun <T> makeSingle(compositeDisposable: CompositeDisposable, body: (() -> Unit),
+                   onCallback: BiConsumer<in Any, in Throwable>) {
+    compositeDisposable.add(
+            Single.fromCallable(body).subscribeOn(Schedulers.io()).subscribe(onCallback)
+    )
+}
