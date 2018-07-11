@@ -10,25 +10,27 @@ import com.awsm_guys.mobile_clicker.presentation.viewinteractor.SwitchPage
 import com.awsm_guys.mobile_clicker.presentation.viewinteractor.ViewEvent
 import com.awsm_guys.mobile_clicker.presentation.viewinteractor.ViewInteractor
 import com.awsm_guys.mobile_clicker.utils.LoggingMixin
-import com.awsm_guys.mobile_clicker.utils.makeSingle
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.reactivex.Observable
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.subjects.PublishSubject
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.messaging.simp.SimpMessagingTemplate
 import org.springframework.stereotype.Component
-import org.springframework.web.socket.TextMessage
-import org.springframework.web.socket.WebSocketSession
+import org.springframework.web.socket.messaging.SessionConnectEvent
+import org.springframework.web.socket.messaging.SessionDisconnectEvent
 import javax.annotation.PostConstruct
 import javax.annotation.PreDestroy
 
 @Component
 class WebViewInteractor @Autowired constructor(
-        private var presentationService: PresentationService
+        private val presentationService: PresentationService,
+        private val simpMessagingTemplate: SimpMessagingTemplate
 ) : ViewInteractor, ControllerListener, WebSocketListener, LoggingMixin {
 
     private val eventsSubject = PublishSubject.create<ViewEvent>()
-    private var socketSession: WebSocketSession? = null
+
+    private lateinit var sessionId: String
 
     private val compositeDisposable = CompositeDisposable()
     private val objectMapper = jacksonObjectMapper()
@@ -45,13 +47,11 @@ class WebViewInteractor @Autowired constructor(
 
     override fun switchPage(page: Page) {
         log("view switching page to ${page.number}")
-        socketSession?.sendMessage(
-            TextMessage(objectMapper.writeValueAsBytes(Message(
-                            Header.SWITCH_PAGE,
-                            page.number.toString(),
-                            mutableMapOf("imageBase64String" to page.imageBase64String)
-            )))
-        )
+        simpMessagingTemplate.convertAndSend("/$sessionId", Message(
+                Header.SWITCH_PAGE,
+                page.number.toString(),
+                mutableMapOf("imageBase64String" to page.imageBase64String)
+        ))
     }
 
     override fun verifyMobileClicker(clicker: MobileClicker): Observable<Boolean> = Observable.just(true)
@@ -64,27 +64,22 @@ class WebViewInteractor @Autowired constructor(
 
     //web socket listeners
 
-    override fun onConnected(session: WebSocketSession) {
-        socketSession = session
+    override fun onConnected(event: SessionConnectEvent) {
     }
 
-    override fun onDisconnected(session: WebSocketSession) {
-        socketSession = null
+    override fun onDisconnected(event: SessionDisconnectEvent) {
         eventsSubject.onNext(Close)
     }
 
-    override fun onMessageReceived(messagePayload: String, session: WebSocketSession) {
-        makeSingle(compositeDisposable) {
-            try {
-                val message = objectMapper.readValue(messagePayload, Message::class.java)
-                eventsSubject.onNext(SwitchPage(message.body.toInt()))
-            } catch (e: Throwable) {
-                trace(e)
-            }
-        }
+    override fun onMessageReceived(message: Message) {
+        eventsSubject.onNext(SwitchPage(message.body.toInt()))
     }
 
     //controller listener
 
-    override fun startPresentation(filePath: String) = presentationService.startPresentation(filePath)
+    override fun startPresentation(filePath: String) =
+            presentationService.startPresentation(filePath)
+                    .also {
+                        sessionId = it.sessionId
+                    }
 }

@@ -1,12 +1,14 @@
 package com.awsm_guys.mobile_clicker.presentation.viewinteractor.web
 
-import org.springframework.web.socket.WebSocketSession
+import com.awsm_guys.mobile_clicker.presentation.poko.Message
+import org.springframework.web.socket.messaging.SessionConnectEvent
+import org.springframework.web.socket.messaging.SessionDisconnectEvent
 
 interface WebSocketListener {
 
-    fun onConnected(session: WebSocketSession)
+    fun onConnected(event: SessionConnectEvent)
 
-    fun onDisconnected(session: WebSocketSession)
+    fun onDisconnected(event: SessionDisconnectEvent)
 
-    fun onMessageReceived(messagePayload: String, session: WebSocketSession)
+    fun onMessageReceived(message: Message)
 }

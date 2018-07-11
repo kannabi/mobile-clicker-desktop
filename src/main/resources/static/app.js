@@ -8,10 +8,9 @@ function connect() {
     var socket = new SockJS(rootEndpoint);
     stompClient = Stomp.over(socket);
     stompClient.connect({}, function (frame) {
-        console.log('Connected: ' + frame);
         //incoming message listening
-        stompClient.subscribe(socketEndpoint, function (message) {
-            console.log(message);
+        stompClient.subscribe(socketEndpoint, function (stompMessage) {
+            var message = JSON.parse(stompMessage.body);
             if (message.header.toString() === 'SWITCH_PAGE') {
                 replaceSlideImage(message.features['imageBase64String']);
                 currentSlideNumber = parseInt(message.body);
@@ -21,7 +20,7 @@ function connect() {
 }
 
 function sendMessage(message){
-    stompClient.send(rootEndpoint,{}, message);
+    stompClient.send("/send", {}, message);
 }
 
 function disconnect() {
