@@ -111,10 +111,12 @@ class PresentationService: LoggingMixin {
 
     private fun endPresentation() {
         presentation = null
+        dropClickerConnectionListening()
         mobileClicker?.disconnect()
         mobileClicker = null
         broadcastDisposable?.dispose()
         broadcastDisposable = null
+        currentPage = 0
     }
 
     private fun dropClickerConnectionListening() {

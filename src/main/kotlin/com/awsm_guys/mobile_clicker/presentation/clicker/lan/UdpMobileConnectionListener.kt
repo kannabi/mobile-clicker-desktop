@@ -2,8 +2,8 @@ package com.awsm_guys.mobile_clicker.presentation.clicker.lan
 
 import com.awsm_guys.mobile_clicker.presentation.clicker.MobileClicker
 import com.awsm_guys.mobile_clicker.presentation.clicker.MobileConnectionListener
-import com.awsm_guys.mobile_clicker.presentation.poko.Message
 import com.awsm_guys.mobile_clicker.presentation.poko.Header
+import com.awsm_guys.mobile_clicker.presentation.poko.Message
 import com.awsm_guys.mobile_clicker.utils.LoggingMixin
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
@@ -30,7 +30,7 @@ class UdpMobileConnectionListener: MobileConnectionListener, LoggingMixin {
                                 features["address"] = it.address.hostAddress
                             }
                 }
-                .retry()
+//                .retry()
                 .distinctUntilChanged()
                 .filter{ it.header == Header.CONNECT }
                 .map {
@@ -38,6 +38,6 @@ class UdpMobileConnectionListener: MobileConnectionListener, LoggingMixin {
                             it.features["address"]!!, it.features["port"]?.toInt()!!, it.body
                     ) as MobileClicker
                 }
-                .retry()
+//                .retry()
                 .toObservable()
 }

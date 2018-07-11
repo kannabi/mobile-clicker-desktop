@@ -6,6 +6,7 @@ import io.reactivex.FlowableOnSubscribe
 import io.reactivex.disposables.Disposables
 import java.net.DatagramPacket
 import java.net.DatagramSocket
+import java.net.SocketException
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -47,12 +48,28 @@ class OnSubscribeUdpListener(
         log("start listening")
         var datagramPacket = DatagramPacket(receiveData, receiveData.size)
         while (isListening.get()) {
-            socket?.receive(datagramPacket)
-            for(emitter in emitters) {
-                log(String(datagramPacket.data))
-                emitter.onNext(datagramPacket)
+            try {
+                socket?.receive(datagramPacket)
+            } catch (e: SocketException) {
+                emitters.forEach { it.onComplete() }
+            } catch (e: Throwable) {
+                emitError(e)
             }
+            emit(datagramPacket)
             datagramPacket = DatagramPacket(receiveData, receiveData.size)
+        }
+    }
+
+    private fun emit(datagramPacket: DatagramPacket) {
+        for(emitter in emitters) {
+            log(String(datagramPacket.data))
+            emitter.onNext(datagramPacket)
+        }
+    }
+
+    private fun emitError(throwable: Throwable) {
+        for(emitter in emitters) {
+            emitter.onError(throwable)
         }
     }
 

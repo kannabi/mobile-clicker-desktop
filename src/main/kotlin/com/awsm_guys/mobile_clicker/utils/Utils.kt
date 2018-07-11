@@ -14,13 +14,13 @@ import java.util.*
 import javax.imageio.ImageIO
 
 
-fun convertPdfToImages(file: File): List<Page> {
-    val document = PDDocument.load(file)
-    val renderer = PDFRenderer(document)
+fun convertPdfToImages(file: File): List<Page> =
+    PDDocument.load(file).use {
+        val renderer = PDFRenderer(it)
 
-    return document.pages
-            .mapIndexed { i, _ -> Page(imgToBase64String(renderer.renderImageWithDPI(i, 150f)), i) }
-}
+        return@use it.pages
+                .mapIndexed { i, _ -> Page(imgToBase64String(renderer.renderImageWithDPI(i, 150f)), i) }
+    }
 
 fun imgToBase64String(img: RenderedImage) =
         ByteArrayOutputStream().use { os ->
