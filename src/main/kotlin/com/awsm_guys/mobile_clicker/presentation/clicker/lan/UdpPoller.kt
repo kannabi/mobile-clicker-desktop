@@ -1,4 +1,4 @@
-package com.awsm_guys.mobile_clicker.mobile.lan
+package com.awsm_guys.mobile_clicker.presentation.clicker.lan
 
 import com.awsm_guys.mobile_clicker.utils.LoggingMixin
 import io.reactivex.Single

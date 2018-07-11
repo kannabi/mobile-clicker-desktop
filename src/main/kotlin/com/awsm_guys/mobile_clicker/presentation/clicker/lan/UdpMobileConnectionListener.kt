@@ -1,9 +1,9 @@
-package com.awsm_guys.mobile_clicker.mobile.lan
+package com.awsm_guys.mobile_clicker.presentation.clicker.lan
 
-import com.awsm_guys.mobile_clicker.mobile.MobileClicker
-import com.awsm_guys.mobile_clicker.mobile.MobileConnectionListener
-import com.awsm_guys.mobile_clicker.mobile.lan.poko.ClickerMessage
-import com.awsm_guys.mobile_clicker.mobile.lan.poko.Header
+import com.awsm_guys.mobile_clicker.presentation.clicker.MobileClicker
+import com.awsm_guys.mobile_clicker.presentation.clicker.MobileConnectionListener
+import com.awsm_guys.mobile_clicker.presentation.poko.Message
+import com.awsm_guys.mobile_clicker.presentation.poko.Header
 import com.awsm_guys.mobile_clicker.utils.LoggingMixin
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
@@ -25,7 +25,7 @@ class UdpMobileConnectionListener: MobileConnectionListener, LoggingMixin {
         Flowable.create(onSubscribeUdpBroadcast, BackpressureStrategy.LATEST)
                 .doOnNext { log("receive ${String(it.data)}") }
                 .map {
-                    objectMapper.readValue(String(it.data), ClickerMessage::class.java)
+                    objectMapper.readValue(String(it.data), Message::class.java)
                             .apply {
                                 features["address"] = it.address.hostAddress
                             }

@@ -1,12 +1,13 @@
-package com.awsm_guys.mobile_clicker.mobile.lan
+package com.awsm_guys.mobile_clicker.presentation.clicker.lan
 
-import com.awsm_guys.mobile_clicker.mobile.MobileClicker
-import com.awsm_guys.mobile_clicker.mobile.lan.poko.ClickerMessage
-import com.awsm_guys.mobile_clicker.mobile.lan.poko.Header
+import com.awsm_guys.mobile_clicker.presentation.clicker.MobileClicker
+import com.awsm_guys.mobile_clicker.presentation.poko.Message
+import com.awsm_guys.mobile_clicker.presentation.poko.Header
 import com.awsm_guys.mobile_clicker.utils.LoggingMixin
-import com.awsm_guys.mobileclicker.clicker.model.events.ClickerEvent
-import com.awsm_guys.mobileclicker.clicker.model.events.ConnectionClose
-import com.awsm_guys.mobileclicker.clicker.model.events.PageSwitch
+import com.awsm_guys.mobile_clicker.presentation.clicker.poko.ClickerEvent
+import com.awsm_guys.mobile_clicker.presentation.clicker.poko.ConnectionClose
+import com.awsm_guys.mobile_clicker.presentation.clicker.poko.ConnectionOpen
+import com.awsm_guys.mobile_clicker.presentation.clicker.poko.PageSwitch
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.reactivex.Observable
 import io.reactivex.disposables.CompositeDisposable
@@ -31,11 +32,19 @@ class LanMobileClicker(
 
     private val compositeDisposable = CompositeDisposable()
 
-    override fun init(): Observable<ClickerEvent> {
+    override fun init(maxPage: Int, sessionId: String): Observable<ClickerEvent> {
         val udpPoller = UdpPoller()
         val id = udpPoller.poll(
-                getMessage(Header.OK, "$clickerPort", mutableMapOf( "sessionId" to "321rqfsirgoh")).toByteArray(),
-                port, InetAddress.getByName(inetAddress)
+                getMessage(
+                        Header.OK,
+                        "$clickerPort",
+                        mutableMapOf (
+                                "sessionId" to sessionId,
+                                "maxPage" to maxPage.toString()
+                        )
+                ).toByteArray(),
+                port,
+                InetAddress.getByName(inetAddress)
         )
         log("start poll")
 
@@ -50,6 +59,7 @@ class LanMobileClicker(
         udpPoller.remove(id)
         udpPoller.clear()
 
+        eventsSubject.onNext(ConnectionOpen())
         return eventsSubject.hide()
     }
 
@@ -59,7 +69,7 @@ class LanMobileClicker(
         compositeDisposable.add(
             inputObservable
                     .doOnNext { println(it) }
-                    .map { objectMapper.readValue(it, ClickerMessage::class.java) }
+                    .map { objectMapper.readValue(it, Message::class.java) }
 //                    .retry()
                     .subscribeOn(Schedulers.io())
                     .subscribe(::processClickerMessage, {
@@ -74,7 +84,7 @@ class LanMobileClicker(
         )
     }
 
-    private fun processClickerMessage(message: ClickerMessage) {
+    private fun processClickerMessage(message: Message) {
         when(message.header) {
             Header.SWITCH_PAGE -> eventsSubject.onNext(PageSwitch(message.body.toInt()))
             Header.DISCONNECT -> disconnect()
@@ -107,7 +117,7 @@ class LanMobileClicker(
     }
 
     private fun getMessage(header: Header, body: String, features: MutableMap<String, String>) =
-            objectMapper.writeValueAsString(ClickerMessage(header, body, features))
+            objectMapper.writeValueAsString(Message(header, body, features))
 
     override fun disconnect() {
         log("LanMobileClicker disconnecting")

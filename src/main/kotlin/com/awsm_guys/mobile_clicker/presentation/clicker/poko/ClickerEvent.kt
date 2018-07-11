@@ -1,4 +1,4 @@
-package com.awsm_guys.mobileclicker.clicker.model.events
+package com.awsm_guys.mobile_clicker.presentation.clicker.poko
 
 sealed class ClickerEvent
 
