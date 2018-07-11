@@ -1,8 +1,8 @@
 package com.awsm_guys.mobile_clicker.presentation.clicker.lan
 
 import com.awsm_guys.mobile_clicker.presentation.clicker.MobileClicker
-import com.awsm_guys.mobile_clicker.presentation.clicker.poko.ClickerMessage
-import com.awsm_guys.mobile_clicker.presentation.clicker.poko.Header
+import com.awsm_guys.mobile_clicker.presentation.poko.Message
+import com.awsm_guys.mobile_clicker.presentation.poko.Header
 import com.awsm_guys.mobile_clicker.utils.LoggingMixin
 import com.awsm_guys.mobile_clicker.presentation.clicker.poko.ClickerEvent
 import com.awsm_guys.mobile_clicker.presentation.clicker.poko.ConnectionClose
@@ -69,7 +69,7 @@ class LanMobileClicker(
         compositeDisposable.add(
             inputObservable
                     .doOnNext { println(it) }
-                    .map { objectMapper.readValue(it, ClickerMessage::class.java) }
+                    .map { objectMapper.readValue(it, Message::class.java) }
 //                    .retry()
                     .subscribeOn(Schedulers.io())
                     .subscribe(::processClickerMessage, {
@@ -84,7 +84,7 @@ class LanMobileClicker(
         )
     }
 
-    private fun processClickerMessage(message: ClickerMessage) {
+    private fun processClickerMessage(message: Message) {
         when(message.header) {
             Header.SWITCH_PAGE -> eventsSubject.onNext(PageSwitch(message.body.toInt()))
             Header.DISCONNECT -> disconnect()
@@ -117,7 +117,7 @@ class LanMobileClicker(
     }
 
     private fun getMessage(header: Header, body: String, features: MutableMap<String, String>) =
-            objectMapper.writeValueAsString(ClickerMessage(header, body, features))
+            objectMapper.writeValueAsString(Message(header, body, features))
 
     override fun disconnect() {
         log("LanMobileClicker disconnecting")
