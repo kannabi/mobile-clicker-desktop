@@ -15,12 +15,18 @@ class SocketHandler: TextWebSocketHandler() {
     @Autowired
     private lateinit var webSocketListener: WebSocketListener
 
-    override fun handleTextMessage(session: WebSocketSession, message: TextMessage) =
-            webSocketListener.onMessageReceived(message.payload, session)
+    override fun handleTextMessage(session: WebSocketSession, message: TextMessage) {
+        extractData(message.payload)?.let { webSocketListener.onMessageReceived(it, session) }
+    }
 
     override fun afterConnectionEstablished(session: WebSocketSession) =
             webSocketListener.onConnected(session)
 
     override fun afterConnectionClosed(session: WebSocketSession, status: CloseStatus) =
             webSocketListener.onDisconnected(session)
+
+    private fun extractData(payload: String): String? {
+        val parts = payload.split("\n")
+        return if (parts[0] == "SEND") parts[parts.lastIndex] else null
+    }
 }
