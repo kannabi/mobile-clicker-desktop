@@ -8,7 +8,7 @@ import org.springframework.web.socket.messaging.SessionConnectEvent
 
 
 @Component
-class StompConnectEvent : ApplicationListener<SessionConnectEvent> {
+class StompConnectService : ApplicationListener<SessionConnectEvent> {
 
     @Autowired
     private lateinit var webSocketListener: WebSocketListener

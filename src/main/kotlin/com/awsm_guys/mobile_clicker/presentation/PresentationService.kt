@@ -35,7 +35,7 @@ class PresentationService: LoggingMixin {
 
     private lateinit var viewInteractor: ViewInteractor
 
-    private lateinit var presentation: Presentation
+    private var presentation: Presentation? = null
 
     private fun startListeningClickerConnection() {
         broadcastDisposable =
@@ -46,7 +46,7 @@ class PresentationService: LoggingMixin {
                         mobileClicker = it
                         dropClickerConnectionListening()
                     }
-                    .flatMap { mobileClicker!!.init(presentation.pages.size, sessionId) }
+                    .flatMap { mobileClicker!!.init(presentation!!.pages.size, sessionId) }
                     .subscribe(::processClickerEvents, Throwable::printStackTrace)
     }
 
@@ -88,9 +88,9 @@ class PresentationService: LoggingMixin {
         )
         return PresentationInfo(
                 sessionId,
-                presentation.pages.size,
-                presentation.title,
-                presentation.pages[0]
+                presentation!!.pages.size,
+                presentation!!.title,
+                presentation!!.pages[0]
         )
     }
 
@@ -98,22 +98,32 @@ class PresentationService: LoggingMixin {
         when (event) {
             is SwitchPage -> switchPage(event.page)
             is AskConnectClicker -> startListeningClickerConnection()
-            is Close -> exit()
+            is Close -> presentation?.let { exit() }
+            is EndPresentation -> endPresentation()
         }
     }
 
     private fun switchPage(page: Int) {
         currentPage = page
         mobileClicker?.switchToPage(currentPage)
-        viewInteractor.switchPage(presentation.pages[page])
+        viewInteractor.switchPage(presentation!!.pages[page])
+    }
+
+    private fun endPresentation() {
+        presentation = null
+        mobileClicker?.disconnect()
+        mobileClicker = null
+        broadcastDisposable?.dispose()
+        broadcastDisposable = null
     }
 
     private fun dropClickerConnectionListening() {
         mobileConnectionListener.stopListening()
+        //NO U DON'T WANT SET DISPOSING HERE!!!1
     }
 
     private fun exit() {
-
+        System.exit(0)
     }
 
     @PreDestroy

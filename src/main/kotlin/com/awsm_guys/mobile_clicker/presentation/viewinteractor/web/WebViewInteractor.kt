@@ -5,12 +5,8 @@ import com.awsm_guys.mobile_clicker.presentation.clicker.MobileClicker
 import com.awsm_guys.mobile_clicker.presentation.poko.Header
 import com.awsm_guys.mobile_clicker.presentation.poko.Message
 import com.awsm_guys.mobile_clicker.presentation.poko.Page
-import com.awsm_guys.mobile_clicker.presentation.viewinteractor.Close
-import com.awsm_guys.mobile_clicker.presentation.viewinteractor.SwitchPage
-import com.awsm_guys.mobile_clicker.presentation.viewinteractor.ViewEvent
-import com.awsm_guys.mobile_clicker.presentation.viewinteractor.ViewInteractor
+import com.awsm_guys.mobile_clicker.presentation.viewinteractor.*
 import com.awsm_guys.mobile_clicker.utils.LoggingMixin
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.reactivex.Observable
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.subjects.PublishSubject
@@ -28,12 +24,10 @@ class WebViewInteractor @Autowired constructor(
         private val simpMessagingTemplate: SimpMessagingTemplate
 ) : ViewInteractor, ControllerListener, WebSocketListener, LoggingMixin {
 
-    private val eventsSubject = PublishSubject.create<ViewEvent>()
-
-    private lateinit var sessionId: String
-
     private val compositeDisposable = CompositeDisposable()
-    private val objectMapper = jacksonObjectMapper()
+
+    private val eventsSubject = PublishSubject.create<ViewEvent>()
+    private lateinit var sessionId: String
 
     @PostConstruct
     fun init() {
@@ -65,6 +59,7 @@ class WebViewInteractor @Autowired constructor(
     //web socket listeners
 
     override fun onConnected(event: SessionConnectEvent) {
+        eventsSubject.onNext(AskConnectClicker)
     }
 
     override fun onDisconnected(event: SessionDisconnectEvent) {
@@ -72,7 +67,11 @@ class WebViewInteractor @Autowired constructor(
     }
 
     override fun onMessageReceived(message: Message) {
-        eventsSubject.onNext(SwitchPage(message.body.toInt()))
+        when(message.header) {
+            Header.SWITCH_PAGE -> eventsSubject.onNext(SwitchPage(message.body.toInt()))
+            Header.END_PRESENTATION -> eventsSubject.onNext(EndPresentation)
+            else -> Unit
+        }
     }
 
     //controller listener

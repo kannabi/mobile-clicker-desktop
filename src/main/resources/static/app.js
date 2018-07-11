@@ -61,6 +61,16 @@ function switchOnPrevious() {
     }))
 }
 
+function endPresentation() {
+    sendMessage(JSON.stringify({
+            'header': 'END_PRESENTATION',
+            'body' : '',
+            'features': {}
+        })
+    );
+    disconnect();
+}
+
 function bye() {
     $.post("http://localhost:8080/bye", {})
         .done(function (e) {
@@ -78,6 +88,7 @@ $(function () {
     $( "#start" ).click(function() { startPresentation(); });
     $( "#next_slide" ).click(function() { switchOnNext(); });
     $( "#prev_slide" ).click(function() { switchOnPrevious(); });
+    $( "#end" ).click(function() { endPresentation(); });
 });
 
 window.onload = function() {

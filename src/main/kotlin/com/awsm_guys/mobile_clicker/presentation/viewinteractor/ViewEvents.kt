@@ -9,3 +9,5 @@ data class SwitchPage(
 object AskConnectClicker : ViewEvent()
 
 object Close : ViewEvent()
+
+object EndPresentation : ViewEvent()
