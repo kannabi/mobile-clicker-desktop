@@ -8,5 +8,5 @@ interface WebSocketListener {
 
     fun onDisconnected(session: WebSocketSession)
 
-    fun onMessageReceived(message: String, session: WebSocketSession)
+    fun onMessageReceived(messagePayload: String, session: WebSocketSession)
 }

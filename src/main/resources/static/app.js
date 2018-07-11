@@ -1,16 +1,27 @@
 var stompClient = null;
 var presentationInfo = null;
+var socketEndpoint = null;
+var rootEndpoint = '/listener';
+var currentSlideNumber = 0;
 
 function connect() {
-    var socket = new SockJS('/listener');
+    var socket = new SockJS(rootEndpoint);
     stompClient = Stomp.over(socket);
     stompClient.connect({}, function (frame) {
-        setConnected(true);
         console.log('Connected: ' + frame);
-        stompClient.subscribe('/'+ id + '/' + userId, function (greeting) {
-            console.log(greeting);
+        //incoming message listening
+        stompClient.subscribe(socketEndpoint, function (message) {
+            console.log(message);
+            if (message.header.toString() === 'SWITCH_PAGE') {
+                replaceSlideImage(message.features['imageBase64String']);
+                currentSlideNumber = parseInt(message.body);
+            }
         });
     });
+}
+
+function sendMessage(message){
+    stompClient.send(rootEndpoint,{}, message);
 }
 
 function disconnect() {
@@ -25,16 +36,30 @@ function startPresentation() {
         .done(function (e) {
             presentationInfo = e;
             console.log(e);
-            console.log('It was presentation info');
-            // var image = new Image();
-            // image.src =
-            // document.body.appendChild(image);
-            $('#slide_img').attr('src', 'data:image/png;base64,' + e.firstPage.imageBase64String);
+            replaceSlideImage(e.firstPage.imageBase64String);
+            socketEndpoint = '/'+ presentationInfo.sessionId;
+            connect();
         })
         .fail(function (error) {
             console.log("Error");
             console.log(error);
         });
+}
+
+function switchOnNext() {
+    sendMessage(JSON.stringify({
+        'header': 'SWITCH_PAGE',
+        'body' : (currentSlideNumber + 1).toString(),
+        'features': {}
+    }))
+}
+
+function switchOnPrevious() {
+    sendMessage(JSON.stringify({
+        'header': 'SWITCH_PAGE',
+        'body' : (currentSlideNumber - 1).toString(),
+        'features': {}
+    }))
 }
 
 function bye() {
@@ -50,11 +75,10 @@ function bye() {
 }
 
 $(function () {
-    $("form").on('submit', function (e) {
-        e.preventDefault();
-    });
+    $("form").on('submit', function (e) { e.preventDefault(); });
     $( "#start" ).click(function() { startPresentation(); });
-
+    $( "#next_slide" ).click(function() { switchOnNext(); });
+    $( "#prev_slide" ).click(function() { switchOnPrevious(); });
 });
 
 window.onload = function() {
@@ -62,3 +86,7 @@ window.onload = function() {
         bye();
     });
 };
+
+function replaceSlideImage(base64) {
+    $('#slide_img').attr('src', 'data:image/png;base64,' + base64);
+}
