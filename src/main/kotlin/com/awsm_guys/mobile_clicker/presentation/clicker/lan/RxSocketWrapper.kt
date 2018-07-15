@@ -57,7 +57,7 @@ class RxSocketWrapper(private val socket: Socket): LoggingMixin {
         )
     }
 
-    fun close(){
+    fun close() {
         inputStream.close()
         outputStream.close()
         socket.close()

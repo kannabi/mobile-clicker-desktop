@@ -52,7 +52,11 @@ class PresentationService: LoggingMixin {
 
     private fun processClickerEvents(event: ClickerEvent) {
         when(event) {
-            is ConnectionClose -> log("connection close")
+            is ConnectionClose -> {
+                log("clicker disconnected")
+                mobileClicker = null
+                startListeningClickerConnection()
+            }
             is ConnectionOpen -> {
                 log("connection open")
                 mobileClicker?.switchToPage(currentPage)

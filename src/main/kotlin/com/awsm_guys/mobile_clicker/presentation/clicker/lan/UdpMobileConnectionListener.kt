@@ -14,7 +14,7 @@ import io.reactivex.Observable
 class UdpMobileConnectionListener: MobileConnectionListener, LoggingMixin {
 
     private var broadcastPort = 8841
-    private val onSubscribeUdpBroadcast by lazy { OnSubscribeUdpListener(broadcastPort) }
+    private lateinit var onSubscribeUdpBroadcast: OnSubscribeUdpListener
     private val objectMapper = ObjectMapper().registerModule(KotlinModule())
 
     override fun stopListening() {
@@ -22,7 +22,8 @@ class UdpMobileConnectionListener: MobileConnectionListener, LoggingMixin {
     }
 
     override fun startListening(): Observable<MobileClicker> =
-        Flowable.create(onSubscribeUdpBroadcast, BackpressureStrategy.LATEST)
+        Flowable.create(OnSubscribeUdpListener(broadcastPort).also(::onSubscribeUdpBroadcast::set),
+                BackpressureStrategy.LATEST)
                 .doOnNext { log("receive ${String(it.data)}") }
                 .map {
                     objectMapper.readValue(String(it.data), Message::class.java)
@@ -30,7 +31,7 @@ class UdpMobileConnectionListener: MobileConnectionListener, LoggingMixin {
                                 features["address"] = it.address.hostAddress
                             }
                 }
-//                .retry()
+                .retry()
                 .distinctUntilChanged()
                 .filter{ it.header == Header.CONNECT }
                 .map {
@@ -38,6 +39,6 @@ class UdpMobileConnectionListener: MobileConnectionListener, LoggingMixin {
                             it.features["address"]!!, it.features["port"]?.toInt()!!, it.body
                     ) as MobileClicker
                 }
-//                .retry()
+                .retry()
                 .toObservable()
 }

@@ -72,15 +72,7 @@ class LanMobileClicker(
                     .map { objectMapper.readValue(it, Message::class.java) }
                     .retry()
                     .subscribeOn(Schedulers.io())
-                    .subscribe(::processClickerMessage, {
-                        if (it is CloseWithoutMessageException) {
-                            waitForReconnect()
-                        } else {
-                            disconnect()
-                        }
-                    }, {
-                        eventsSubject.onNext(ConnectionClose())
-                    })
+                    .subscribe(::processClickerMessage, { disconnect() }, ::waitForReconnect)
         )
     }
 
