@@ -24,7 +24,7 @@ class UdpMobileConnectionListener: MobileConnectionListener, LoggingMixin {
     override fun startListening(): Observable<MobileClicker> =
         Flowable.create(OnSubscribeUdpListener(broadcastPort).also(::onSubscribeUdpBroadcast::set),
                 BackpressureStrategy.LATEST)
-                .doOnNext { log("receive ${String(it.data)}") }
+                .doOnNext { log("connection listener receive ${String(it.data)}") }
                 .map {
                     objectMapper.readValue(String(it.data), Message::class.java)
                             .apply {

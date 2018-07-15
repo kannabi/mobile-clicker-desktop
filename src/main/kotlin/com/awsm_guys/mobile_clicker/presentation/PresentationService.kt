@@ -36,6 +36,7 @@ class PresentationService: LoggingMixin {
     private lateinit var viewInteractor: ViewInteractor
 
     private var presentation: Presentation? = null
+    private var presentationSize = 0
 
     private fun startListeningClickerConnection() {
         broadcastDisposable =
@@ -90,9 +91,11 @@ class PresentationService: LoggingMixin {
         presentation = Presentation(
                 sessionId, file.name, convertPdfToImages(file)
         )
+        currentPage = 0
+        presentationSize = presentation!!.pages.size
         return PresentationInfo(
                 sessionId,
-                presentation!!.pages.size,
+                presentationSize,
                 presentation!!.title,
                 presentation!!.pages[0]
         )
@@ -108,9 +111,11 @@ class PresentationService: LoggingMixin {
     }
 
     private fun switchPage(page: Int) {
-        currentPage = page
-        mobileClicker?.switchToPage(currentPage)
-        viewInteractor.switchPage(presentation!!.pages[page])
+        if (page in 0 until presentationSize){
+            currentPage = page
+            mobileClicker?.switchToPage(currentPage)
+            viewInteractor.switchPage(presentation!!.pages[page])
+        }
     }
 
     private fun endPresentation() {
