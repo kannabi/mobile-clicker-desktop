@@ -1,13 +1,13 @@
 package com.awsm_guys.mobile_clicker.presentation.clicker.lan
 
 import com.awsm_guys.mobile_clicker.presentation.clicker.MobileClicker
-import com.awsm_guys.mobile_clicker.presentation.poko.Message
-import com.awsm_guys.mobile_clicker.presentation.poko.Header
-import com.awsm_guys.mobile_clicker.utils.LoggingMixin
 import com.awsm_guys.mobile_clicker.presentation.clicker.poko.ClickerEvent
 import com.awsm_guys.mobile_clicker.presentation.clicker.poko.ConnectionClose
 import com.awsm_guys.mobile_clicker.presentation.clicker.poko.ConnectionOpen
 import com.awsm_guys.mobile_clicker.presentation.clicker.poko.PageSwitch
+import com.awsm_guys.mobile_clicker.presentation.poko.Header
+import com.awsm_guys.mobile_clicker.presentation.poko.Message
+import com.awsm_guys.mobile_clicker.utils.LoggingMixin
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.reactivex.Observable
 import io.reactivex.disposables.CompositeDisposable
@@ -70,7 +70,7 @@ class LanMobileClicker(
             inputObservable
                     .doOnNext { println(it) }
                     .map { objectMapper.readValue(it, Message::class.java) }
-//                    .retry()
+                    .retry()
                     .subscribeOn(Schedulers.io())
                     .subscribe(::processClickerMessage, {
                         if (it is CloseWithoutMessageException) {

@@ -8,6 +8,7 @@ import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.PublishSubject
 import java.net.Socket
+import java.net.SocketException
 
 class RxSocketWrapper(private val socket: Socket): LoggingMixin {
 
@@ -33,6 +34,8 @@ class RxSocketWrapper(private val socket: Socket): LoggingMixin {
                         while (inputStream.read(data) != -1){
                             dataSubject.onNext(String(data))
                         }
+                    } catch (e: SocketException) {
+                        dataSubject.onComplete()
                     } catch (e: Throwable){
                         trace(e)
                         dataSubject.onError(e)
