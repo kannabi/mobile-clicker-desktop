@@ -108,6 +108,18 @@ class LanMobileClicker(
         )
     }
 
+    override fun updateMeta(maxPage: Int, tinySlides: Map<String, String>) {
+        rxSocketWrapper.sendData(
+                getMessage(
+                        Header.UPDATE_META, "",
+                        mutableMapOf<String, String>().apply {
+                            put("maxPage", maxPage.toString())
+                            putAll(tinySlides)
+                        }
+                )
+        )
+    }
+
     private fun getMessage(header: Header, body: String, features: MutableMap<String, String>) =
             objectMapper.writeValueAsString(Message(header, body, features))
 

@@ -10,5 +10,8 @@ interface MobileClicker {
 
     fun switchToPage(pageNumber: Int)
 
+    //This data should be packed in to a data class in future
+    fun updateMeta(maxPage: Int, tinySlides: Map<String, String>)
+
     fun disconnect()
 }

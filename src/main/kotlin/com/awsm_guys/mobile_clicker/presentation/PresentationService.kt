@@ -60,7 +60,14 @@ class PresentationService: LoggingMixin {
             }
             is ConnectionOpen -> {
                 log("connection open")
-                mobileClicker?.switchToPage(currentPage)
+                mobileClicker?.apply{
+                    switchToPage(currentPage)
+                    updateMeta(
+                        presentationSize,
+                        presentation!!.pages.map { it.number.toString() to it.tinyImageBase64String }.toMap()
+                    )
+                }
+
             }
             is PageSwitch -> {
                 log("clicker switch to a page ${event.page}")
