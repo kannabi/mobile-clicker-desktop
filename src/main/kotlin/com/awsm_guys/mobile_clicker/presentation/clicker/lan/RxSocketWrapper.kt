@@ -1,9 +1,11 @@
 package com.awsm_guys.mobile_clicker.presentation.clicker.lan
 
 import com.awsm_guys.mobile_clicker.utils.LoggingMixin
+import io.reactivex.BackpressureStrategy
 import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.PublishSubject
 import java.io.Closeable
@@ -16,11 +18,11 @@ class RxSocketWrapper(
 ): LoggingMixin, Closeable {
 
     private val MESSAGE_END: ByteArray = byteArrayOf(-1)
+    private val EMPTY_BYTE: Byte = -2
 
     private val compositeDisposable = CompositeDisposable()
 
     private val outputStream = socket.getOutputStream()
-        get() = synchronized(lock) { return field }
     private val inputStream = socket.getInputStream()
 
     private val lock = Any()
@@ -33,9 +35,10 @@ class RxSocketWrapper(
                 Completable.fromCallable {
                     try {
                         val data = ByteArray(bufferSize)
+                        data.fill(EMPTY_BYTE)
                         while (inputStream.read(data) != -1) {
                             processData(data)
-                            data.fill(0)
+                            data.fill(EMPTY_BYTE)
                         }
                     } catch (e: SocketException) {
                         dataSubject.onComplete()
@@ -47,43 +50,48 @@ class RxSocketWrapper(
                         .subscribe(dataSubject::onComplete, dataSubject::onError)
         )
 
-        return@lazy dataSubject.hide()
+        return@lazy dataSubject.hide().observeOn(Schedulers.io())
     }
 
     private val stringBuilder = StringBuilder()
 
     private fun processData(data: ByteArray) {
-        val messageEnd = data.indexOf(MESSAGE_END[0])
-        val isMessageEnd = messageEnd != -1
-
-        stringBuilder.append(
-                String(data, 0, if (isMessageEnd) messageEnd else bufferSize)
-        )
-        if (isMessageEnd) {
-            dataSubject.onNext(stringBuilder.toString())
-            stringBuilder.setLength(0)
+        var previousIndex = 0
+        data.forEachIndexed { i, it ->
+            when (it) {
+                MESSAGE_END[0] -> {
+                    stringBuilder.append(String(data, previousIndex, i - previousIndex))
+                    dataSubject.onNext(stringBuilder.toString())
+                    stringBuilder.setLength(0)
+                    previousIndex = i + 1
+                }
+                EMPTY_BYTE -> previousIndex = i
+            }
+        }
+        if (previousIndex != data.lastIndex) {
+            stringBuilder.append(String(data, previousIndex, bufferSize - previousIndex))
         }
     }
 
-    fun sendData(data: String) {
-        compositeDisposable.add(
-                Completable.fromCallable {
-                    outputStream.write(data.toByteArray())
-                    outputStream.write(MESSAGE_END)
-                    outputStream.flush()
-                }.subscribeOn(Schedulers.io())
-                        .subscribe({log("send $data")}, ::trace)
-        )
-    }
+    private var sendSubject = PublishSubject.create<String>()
+    private var sendDisposable: Disposable? = null
 
-    fun sendData(data: String, completeCallback: () -> Unit) {
-        compositeDisposable.add(
-                Completable.fromCallable {
-                    outputStream.write(data.toByteArray())
-                    outputStream.flush()
-                }.subscribeOn(Schedulers.io())
-                        .subscribe(completeCallback, ::trace)
-        )
+
+    fun sendData(data: String, completeCallback: (() -> Unit)? = null) {
+        if (sendDisposable == null) {
+            sendDisposable =
+                    sendSubject.hide().toFlowable(BackpressureStrategy.BUFFER)
+                            .observeOn(Schedulers.io())
+                            .subscribe({
+                                synchronized(outputStream) {
+                                    outputStream.write(it.toByteArray().plus(MESSAGE_END[0]))
+                                    outputStream.flush()
+                                }
+                                completeCallback?.invoke()
+                            }, ::trace)
+        }
+
+        sendSubject.onNext(data)
     }
 
     override fun close() {
