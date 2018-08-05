@@ -64,7 +64,7 @@ class PresentationService: LoggingMixin {
                     switchToPage(currentPage)
                     updateMeta(
                         presentationSize,
-                        presentation!!.pages.map { it.number.toString() to it.tinyImageBase64String }.toMap()
+                        presentation!!.pages.map { (it.number + 1).toString() to it.tinyImageBase64String }.toMap()
                     )
                 }
 

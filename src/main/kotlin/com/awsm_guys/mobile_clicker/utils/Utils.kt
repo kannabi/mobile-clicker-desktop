@@ -22,7 +22,7 @@ fun convertPdfToImages(file: File): List<Page> =
                 .mapIndexed { i, _ ->
                     Page(
                         imgToBase64String(renderer.renderImageWithDPI(i, 200f)),
-                        imgToBase64String(renderer.renderImageWithDPI(i, 20f)),
+                        imgToBase64String(renderer.renderImageWithDPI(i, 50f)),
                         i
                     )
                 }

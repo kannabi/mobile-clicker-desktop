@@ -94,6 +94,7 @@ class LanMobileClicker(
                 it.soTimeout = 15000
                 rxSocketWrapper = RxSocketWrapper(it.accept())
                 subscribeToSocketData(rxSocketWrapper.inputObservable)
+                eventsSubject.onNext(ConnectionOpen())
             }
         } catch (timeoutException: SocketTimeoutException) {
             trace(timeoutException)
