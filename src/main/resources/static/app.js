@@ -11,12 +11,28 @@ function connect() {
         //incoming message listening
         stompClient.subscribe(socketEndpoint, function (stompMessage) {
             var message = JSON.parse(stompMessage.body);
-            if (message.header.toString() === 'SWITCH_PAGE') {
+            var header = message.header.toString();
+            if (header === 'SWITCH_PAGE') {
                 replaceSlideImage(message.features['imageBase64String']);
                 currentSlideNumber = parseInt(message.body);
+            } else if (header === 'VERIFY_CLICKER') {
+                verifyClickerConnection(message.body.toString())
             }
         });
     });
+}
+
+function verifyClickerConnection(name) {
+    approveClicker(confirm("Would you like to connect a clicker " + name + "?"))
+}
+
+function approveClicker(res) {
+    sendMessage(JSON.stringify({
+            'header': 'VERIFY_CLICKER',
+            'body' : res.toString(),
+            'features': {}
+        })
+    );
 }
 
 function sendMessage(message){
