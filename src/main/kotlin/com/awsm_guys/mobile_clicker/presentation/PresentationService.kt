@@ -56,6 +56,8 @@ class PresentationService: LoggingMixin {
             is ConnectionClose -> {
                 log("clicker disconnected")
                 mobileClicker = null
+                broadcastDisposable?.dispose()
+                broadcastDisposable = null
                 startListeningClickerConnection()
             }
             is ConnectionOpen -> {
