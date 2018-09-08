@@ -58,6 +58,7 @@ class PresentationService: LoggingMixin {
                 mobileClicker = null
                 broadcastDisposable?.dispose()
                 broadcastDisposable = null
+                viewInteractor.notifyClickerDisconnected()
                 startListeningClickerConnection()
             }
             is ConnectionOpen -> {

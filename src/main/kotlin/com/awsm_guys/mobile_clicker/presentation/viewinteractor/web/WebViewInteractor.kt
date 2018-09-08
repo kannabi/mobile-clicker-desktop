@@ -61,7 +61,11 @@ class WebViewInteractor @Autowired constructor(
     override fun getEventsObservable(): Observable<ViewEvent> = eventsSubject.hide()
 
     override fun notifyClickerDisconnected() {
-        log("notifyClickerDisconnected")
+        simpMessagingTemplate.convertAndSend("/$sessionId", Message(
+                Header.CLICKER_DISCONNECTED,
+                "",
+                mutableMapOf()
+        ))
     }
 
     //web socket listeners

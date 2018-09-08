@@ -17,6 +17,8 @@ function connect() {
                 currentSlideNumber = parseInt(message.body);
             } else if (header === 'VERIFY_CLICKER') {
                 verifyClickerConnection(message.body.toString())
+            } else if (header === 'CLICKER_DISCONNECTED') {
+                alert('Clicker has been disconnected');
             }
         });
     });
