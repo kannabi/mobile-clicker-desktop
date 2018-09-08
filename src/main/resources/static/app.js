@@ -23,14 +23,16 @@ function connect() {
 }
 
 function verifyClickerConnection(name) {
-    approveClicker(confirm("Would you like to connect a clicker " + name + "?"))
+    approveClicker(name, confirm("Would you like to connect a clicker " + name + "?"))
 }
 
-function approveClicker(res) {
+function approveClicker(name, res) {
     sendMessage(JSON.stringify({
             'header': 'VERIFY_CLICKER',
-            'body' : res.toString(),
-            'features': {}
+            'body' : name,
+            'features': {
+                'verify': res.toString()
+            }
         })
     );
 }

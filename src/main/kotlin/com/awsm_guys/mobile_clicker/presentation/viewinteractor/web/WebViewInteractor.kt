@@ -26,6 +26,7 @@ class WebViewInteractor @Autowired constructor(
 
     private val compositeDisposable = CompositeDisposable()
 
+    private val verifyClickerSubject = PublishSubject.create<Boolean>()
     private val eventsSubject = PublishSubject.create<ViewEvent>()
     private lateinit var sessionId: String
 
@@ -48,7 +49,14 @@ class WebViewInteractor @Autowired constructor(
         ))
     }
 
-    override fun verifyMobileClicker(clicker: MobileClicker): Observable<Boolean> = Observable.just(true)
+    override fun verifyMobileClicker(clicker: MobileClicker): Observable<Boolean> {
+        simpMessagingTemplate.convertAndSend("/$sessionId", Message(
+                Header.VERIFY_CLICKER,
+                clicker.getName(),
+                mutableMapOf()
+        ))
+        return verifyClickerSubject.hide()
+    }
 
     override fun getEventsObservable(): Observable<ViewEvent> = eventsSubject.hide()
 
@@ -70,6 +78,8 @@ class WebViewInteractor @Autowired constructor(
         when(message.header) {
             Header.SWITCH_PAGE -> eventsSubject.onNext(SwitchPage(message.body.toInt()))
             Header.END_PRESENTATION -> eventsSubject.onNext(EndPresentation)
+            Header.VERIFY_CLICKER ->
+                verifyClickerSubject.onNext(message.features["verify"]?.toBoolean() ?: false)
             else -> Unit
         }
     }
