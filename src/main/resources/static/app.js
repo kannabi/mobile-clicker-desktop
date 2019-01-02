@@ -51,7 +51,7 @@ function disconnect() {
 }
 
 function startPresentation() {
-    $.post("http://localhost:8080/start_presentation", {'filePath': 'C:\\Users\\hekpo\\Downloads\\Presentation_SchukinVV.pdf'})
+    $.post("http://localhost:8080/start_presentation", {'filePath': 'C:\\Users\\hekpo\\Downloads\\Mobile_UX_UI.pdf'})
         .done(function (e) {
             presentationInfo = e;
             console.log(e);
